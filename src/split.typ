@@ -4,9 +4,9 @@
 //
 // A breakpoints must always be at a space. For example, the sequece
 //   ([Hello], [ ], [my world!])
-// has two breakpoints:
-//  1. ([Hello],) - ([my world!],)
-//  2. ([Hello my], [ ]) - ([world!],)
+// has two inner breakpoints:
+//  1. ([Hello],) - ([my world!],) - (sep: [ ])
+//  2. ([Hello my],) - ([world!],) - (sep: " ")
 //
 // Returns: The number of breakpoints.
 #let breakpoints(body) = {
@@ -36,7 +36,7 @@
 #let split(body, index) = {
   // Shortcut for out-of-bounds indices.
   if index > breakpoints(body) {
-    return (body, none)
+    return (body, none, none)
   }
 
   if index < 0 {
@@ -48,7 +48,7 @@
     let words = body.split(" ")
     let first = words.slice(0, index).join(" ")
     let second = words.slice(index).join(" ")
-    return (first, second)
+    return (first, second, " ")
   }
 
   // Handle text content.
@@ -57,8 +57,8 @@
     if "label" in fields { fields.remove("label") }
     let label = if body.has("label") { body.label }
     let func(it) = if it != none { body.func()(..fields, it) }
-    let (first, second) = split(text, index)
-    return attach-label((func(first), func(second)), label)
+    let (first, second, sep) = split(text, index)
+    return (..attach-label((func(first), func(second)), label), sep)
   }
 
   // Handle content with "body" field.
@@ -67,8 +67,8 @@
     if "label" in fields { fields.remove("label") }
     let label = if body.has("label") { body.label }
     let func(it) = if it != none { body.func()(..fields, it) }
-    let (first, second) = split(text, index)
-    return attach-label((func(first), func(second)), label)
+    let (first, second, sep) = split(text, index)
+    return (..attach-label((func(first), func(second)), label), sep)
   }
 
   // Handle styled content.
@@ -77,14 +77,15 @@
     if "label" in fields { fields.remove("label") }
     let label = if body.has("label") { body.label }
     let func(it) = if it != none { body.func()(it, styles) }
-    let (first, second) = split(child, index)
-    return attach-label((func(first), func(second)), label)
+    let (first, second, sep) = split(child, index)
+    return (..attach-label((func(first), func(second)), label), sep)
   }
 
   // Handle sequences.
   if body.has("children") {
     let first = ()
     let second = ()
+    let sep = none
 
     // Find child containing the breakpoint and split it.
     let sub-index = index
@@ -95,9 +96,12 @@
       if sub-index <= child-breakpoints {
         if child.func() not in (space, linebreak, parbreak) {
           // Push split child (skip trailing spaces)
-          let (child-first, child-second) = split(child, sub-index)
+          let (child-first, child-second, child-sep) = split(child, sub-index)
           first.push(child-first)
           second.push(child-second)
+          sep = child-sep
+        } else {
+          sep = child
         }
 
         second += body.children.slice(i + 1)
@@ -108,9 +112,9 @@
       first.push(child)
     }
 
-    return (first.join(), second.join())
+    return (first.join(), second.join(), sep)
   }
 
   // Handle unbreakable content.
-  return if index == 0 { (none, body) } else { (body, none) }
+  return if index == 0 { (none, body, none) } else { (body, none, none) }
 }

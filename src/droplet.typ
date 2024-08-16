@@ -133,15 +133,15 @@
   let index = 1
   let top-position = 0pt
   let prev-height = 0pt
-  let (first, second) = while true {
-    let (first, second) = split(rest, index)
+  let (first, second, sep) = while true {
+    let (first, second, _) = split(rest, index)
     let first = {
       set par(hanging-indent: hanging-indent, justify: justify)
       first
     }
 
     let height = measure(bounded(first)).height
-    let new = split(first, -1).at(1)
+    let (_, new, sep) = split(first, -1)
     top-position = calc.max(
       top-position,
       height - measure(new).height - par.leading.to-absolute()
@@ -155,7 +155,7 @@
 
     if second == none {
       // All content fits next to dropcap.
-      (first, none)
+      (first, none, none)
       break
     }
 
@@ -165,6 +165,13 @@
 
   // Layout dropcap and aside text as grid.
   set par(justify: justify)
+
+  // Find out whether there is a break between the first and second part.
+  let has-break = type(sep) == content and sep.func() in (linebreak, parbreak)
+  if not has-break {
+    let sep = split(first, -1).at(2)
+    has-break = type(sep) == content and sep.func() in (linebreak, parbreak)
+  }
 
   let last-of-first-inline = inline(split(first, -1).at(1))
   let first-of-second-inline = second != none and inline(split(second, 1).at(0))
@@ -178,12 +185,14 @@
       set par(hanging-indent: hanging-indent)
       first
       
-      if last-of-first-inline and first-of-second-inline {
+      if not has-break and last-of-first-inline and first-of-second-inline {
         linebreak(justify: justify)
       } 
     }
   ))
 
   if func == box { linebreak() }
+  if type(sep) == content and sep.func() in (linebreak, parbreak) { sep }
+
   second
 })
