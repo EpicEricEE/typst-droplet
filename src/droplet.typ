@@ -5,18 +5,15 @@
 // Sets the font size so the resulting text height matches the given height.
 //
 // If not specified otherwise in "text-args", the top and bottom edge of the
-// resulting text element will be set to "bounds". If the given body does not
-// contain any text, the original body is returned with only the given
-// arguments applied.
+// resulting text element will be set to "bounds".
 //
 // Parameters:
 // - height: The target height of the resulting text.
-// - threshold: The maximum difference between target and actual height.
 // - text-args: Arguments to be passed to the underlying text element.
 // - body: The content of the text element.
 //
 // Returns: The text with the set font size.
-#let sized(height, ..text-args, threshold: 0.1pt, body) = context {
+#let sized(height, ..text-args, body) = context {
   let styled-text = text.with(
     top-edge: "bounds",
     bottom-edge: "bounds",
@@ -24,25 +21,8 @@
     body
   )
 
-  let size = height
-  let font-height = measure(styled-text(size: size)).height
-
-  // This should only take one iteration, but just in case...
-  let i = 0
-  while font-height > 0pt and i < 100 and calc.abs(font-height - height) > threshold {
-    size *= 1 + (height - font-height) / font-height
-    font-height = measure(styled-text(size: size)).height
-    i += 1
-  }
-
-  return if i < 100 {
-    styled-text(size: size)
-  } else {
-    // Font size calculation did not converge, as there is probably no text
-    // that can be set to the given height. Return the original text instead,
-    // with only the given arguments applied.
-    text(..text-args.named(), body)
-  }
+  let factor = height / measure(styled-text(1em)).height
+  styled-text(factor * 1em)
 }
 
 // Resolves the given height to an absolute length.
@@ -53,13 +33,10 @@
 // Requires context.
 #let resolve-height(height) = {
   if type(height) == int {
-    // Create dummy content to convert line count to height.
-    let sample-lines = range(height).map(_ => [x]).join(linebreak())
-    measure(sample-lines).height
+    measure([x\ ] * height).height
   } else {
     height.to-absolute()
   }
-
 }
 
 // Shows the first letter of the given content in a larger font.
@@ -93,7 +70,7 @@
   transform: none,
   ..text-args,
   body
-) = layout(bounds => context {
+) = layout(bounds => {
   let (letter, rest) = if text-args.pos() == () {
     extract(body)
   } else {
