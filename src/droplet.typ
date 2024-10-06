@@ -4,23 +4,14 @@
 
 // Sets the font size so the resulting text height matches the given height.
 //
-// If not specified otherwise in "text-args", the top and bottom edge of the
-// resulting text element will be set to "bounds".
-//
 // Parameters:
 // - height: The target height of the resulting text.
-// - text-args: Arguments to be passed to the underlying text element.
+// - text-args: Named arguments to be passed to the underlying text element.
 // - body: The content of the text element.
 //
-// Returns: The text with the set font size.
+// Returns: The text with the adjusted size.
 #let sized(height, ..text-args, body) = context {
-  let styled-text = text.with(
-    top-edge: "bounds",
-    bottom-edge: "bounds",
-    ..text-args.named(),
-    body
-  )
-
+  let styled-text = text.with(..text-args.named(), body)
   let factor = height / measure(styled-text(1em)).height
   styled-text(factor * 1em)
 }
@@ -47,7 +38,8 @@
 //
 // Parameters:
 // - height: The height of the first letter. Can be given as the number of
-//           lines (integer) or as a length.
+//           lines (integer) or as a length. If set to `auto`, no scaling is
+//           applied.
 // - justify: Whether to justify the text next to the first letter.
 // - gap: The space between the first letter and the text.
 // - hanging-indent: The indent of lines after the first line.
@@ -71,6 +63,18 @@
   ..text-args,
   body
 ) = layout(bounds => {
+  let text-args = text-args
+
+  if height != auto {
+    // Set default top and bottom edge to "bounds" if not specified.
+    if "top-edge" not in text-args.named() {
+      text-args = arguments(..text-args, top-edge: "bounds")
+    }
+    if "bottom-edge" not in text-args.named() {
+      text-args = arguments(..text-args, bottom-edge: "bounds")
+    }
+  }
+
   let (letter, rest) = if text-args.pos() == () {
     extract(body)
   } else {
@@ -82,7 +86,13 @@
     letter = transform(letter)
   }
 
-  let letter-height = resolve-height(height)
+  let letter-height = if height == auto {
+    // Don't rescale if height is set to auto.
+    measure(text(..text-args.named(), letter)).height
+  } else {
+    resolve-height(height)
+  }
+
   let depth = resolve-height(depth)
 
   // Create dropcap with the height of sample content.
@@ -124,7 +134,7 @@
       height - measure(new).height - par.leading.to-absolute()
     )
 
-    if top-position >= letter-height + depth and height > prev-height {
+    if top-position >= letter-height + depth - 1e-6pt and height > prev-height {
       // Limit reached, new element doesn't fit anymore
       split(rest, index - 1)
       break
