@@ -83,7 +83,7 @@
   }
 
   if transform != none {
-    letter = transform(letter)
+    letter = context transform(letter)
   }
 
   let letter-height = if height == auto {
