@@ -161,9 +161,15 @@
     has-break = type(sep) == content and sep.func() in (linebreak, parbreak)
   }
 
-  let last-of-first-inline = inline(split(first, -1).at(1))
-  let first-of-second-inline = second != none and inline(split(second, 1).at(0))
-  let func = if last-of-first-inline { box } else { block }
+  // Find elements at boundary.
+  let last-of-first = split(first, -1).at(1)
+  let first-of-second = if second == none { none } else  { split(second, 1).at(0) }
+
+  let func(body) = if inline(last-of-first) {
+    box(body) + linebreak()
+  } else {
+    block(body)
+  }
 
   func(grid(
     column-gutter: gap,
@@ -173,13 +179,12 @@
       set par(hanging-indent: hanging-indent)
       first
       
-      if not has-break and last-of-first-inline and first-of-second-inline {
+      if not has-break and inline(last-of-first) and inline(first-of-second) {
         linebreak(justify: justify)
       } 
     }
   ))
 
-  if func == box { linebreak() }
   if type(sep) == content and sep.func() in (linebreak, parbreak) { sep }
 
   second

@@ -90,5 +90,5 @@
 //
 // Requires context.
 #let inline(element) = {
-  measure(h(0.1pt) + element).width > measure(element).width
+  element != none and measure(h(0.1pt) + element).width > measure(element).width
 }
