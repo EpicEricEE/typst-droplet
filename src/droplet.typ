@@ -12,7 +12,8 @@
 // Returns: The text with the adjusted size.
 #let sized(height, ..text-args, body) = context {
   let styled-text = text.with(..text-args.named(), body)
-  let factor = height / measure(styled-text(1em)).height
+  let measured = measure(styled-text(1em)).height 
+  let factor = if measured > 0pt { height / measured } else { 1 }
   styled-text(factor * 1em)
 }
 
