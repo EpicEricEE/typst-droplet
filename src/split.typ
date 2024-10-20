@@ -1,5 +1,16 @@
 #import "util.typ": attach-label, space, splittable
 
+// Joins the given children into a single content.
+//
+// If the children list is empty, an empty content is returned instead of none.
+#let join(children) = {
+  if children.len() == 0 {
+    []
+  } else {
+    children.join()
+  }
+}
+
 // Gets the number of breakpoints in the given content.
 //
 // A breakpoints must always be at a space. For example, the sequece
@@ -112,7 +123,7 @@
       first.push(child)
     }
 
-    return (first.join(), second.join(), sep)
+    return (join(first), join(second), sep)
   }
 
   // Handle unbreakable content.
