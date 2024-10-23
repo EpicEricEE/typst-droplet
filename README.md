@@ -55,7 +55,7 @@ Note that when using `em` units, they are resolved relative to the font size of 
 ## Example
 
 ```typ
-#import "@preview/droplet:0.2.0": dropcap
+#import "@preview/droplet:0.3.0": dropcap
 
 #set par(justify: true)
 
