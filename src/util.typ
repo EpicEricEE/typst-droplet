@@ -1,5 +1,5 @@
 // Elements that can be split and have a 'body' field.
-#let splittable = (strong, emph, underline, stroke, overline, highlight)
+#let splittable = (strong, emph, underline, stroke, overline, highlight, smallcaps)
 
 // Element function of spaces.
 #let space = [ ].func()
@@ -29,7 +29,7 @@
     " "
   } else if body.func() == super {
     let body-string = to-string(body.body)
-    if body-string.match(regex("^[0-9+\-=\(\)ni\s]+$")) != none {
+    if body-string != none and regex("^[0-9+\-=\(\)ni\s]+$") in body-string {
       body-string
         .replace("1", "¹")
         .replace("2", "²")
@@ -45,7 +45,7 @@
     }
   } else if body.func() == sub {
     let body-string = to-string(body.body)
-    if body-string.match(regex("^[0-9+\-=\(\)aehk-pstx\s]+$")) != none {
+    if body-string != none and regex("^[0-9+\-=\(\)aehk-pstx\s]+$") in body-string {
       body-string
         .replace(regex("[0-9]"), it => str.from-unicode(0x2080 + int(it.text)))
         .replace("+", "\u{208A}")

@@ -135,7 +135,7 @@
   // converted to a string, but not if it's e.g. a 'box' or 'image'.
   if to-string(letter) != none {
     // Append opening punctuation characters until the first "real" letter.
-    while to-string(letter).last().match(regex-before) != none {
+    while regex-before in to-string(letter).last() {
       let (next-letter, new-rest) = extract-first-letter(rest)
       if next-letter == none { break }
       letter += next-letter
@@ -144,7 +144,7 @@
 
     // Append closing punctuation characters.
     let (next-letter, new-rest) = extract-first-letter(rest)
-    while next-letter != none and to-string(next-letter).match(regex-after) != none {
+    while to-string(next-letter) != none and regex-after in to-string(next-letter) {
       letter += next-letter
       rest = new-rest
       (next-letter, new-rest) = extract-first-letter(rest)

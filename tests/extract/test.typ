@@ -10,3 +10,4 @@
 #dropcap[#super[1] In the beginning...]
 #dropcap[H#sub[2] is hydrogen.]
 #dropcap[#box[This] is a boxed word.]
+#dropcap[#smallcaps[This] is using small caps.]
