@@ -65,7 +65,7 @@
   // Handle text content.
   if body.has("text") {
     let (text, ..fields) = body.fields()
-    if "label" in fields { fields.remove("label") }
+    let _ = if "label" in fields { fields.remove("label") }
     let label = if body.has("label") { body.label }
     let func(it) = if it != none { body.func()(..fields, it) }
     let (first, second, sep) = split(text, index)
@@ -75,7 +75,7 @@
   // Handle content with "body" field.
   if body.func() in splittable {
     let (body: text, ..fields) = body.fields()
-    if "label" in fields { fields.remove("label") }
+    let _ = if "label" in fields { fields.remove("label") }
     let label = if body.has("label") { body.label }
     let func(it) = if it != none { body.func()(..fields, it) }
     let (first, second, sep) = split(text, index)
@@ -85,7 +85,7 @@
   // Handle styled content.
   if body.has("child") {
     let (child, styles, ..fields) = body.fields()
-    if "label" in fields { fields.remove("label") }
+    let _ = if "label" in fields { fields.remove("label") }
     let label = if body.has("label") { body.label }
     let func(it) = if it != none { body.func()(it, styles) }
     let (first, second, sep) = split(child, index)
