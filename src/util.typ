@@ -92,3 +92,15 @@
 #let inline(element) = {
   element != none and measure(h(0.1pt) + element).width > measure(element).width
 }
+
+/// Resolve text direction, depending on the language.
+/// 
+/// Requires context.
+#let resolve-dir() = {
+  let rtl-langauges = (
+    "ar", "dv", "fa", "he", "ks", "pa", "ps", "sd", "ug", "ur", "yi"
+  )
+  if text.dir != auto { text.dir }
+  else if text.lang in rtl-langauges { rtl }
+  else { ltr }
+}

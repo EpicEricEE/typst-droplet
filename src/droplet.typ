@@ -1,6 +1,6 @@
 #import "extract.typ": extract
 #import "split.typ": split
-#import "util.typ": inline
+#import "util.typ": inline, resolve-dir
 
 // Sets the font size so the resulting text height matches the given height.
 //
@@ -123,12 +123,13 @@
   let prev-height = 0pt
   let (first, second, sep) = while true {
     let (first, second, _) = split(rest, index)
-    let first = {
-      set par(hanging-indent: hanging-indent, justify: justify)
-      first
-    }
 
-    let height = measure(bounded(first)).height
+    let height = measure(bounded({
+      set par(justify: justify)
+      let start = if resolve-dir() == ltr { "left" } else { "right" }
+      pad(..((start): hanging-indent), h(-hanging-indent) + first)
+    })).height
+
     let (_, new, sep) = split(first, -1)
     top-position = calc.max(
       top-position,
@@ -176,12 +177,15 @@
     columns: (letter-width - overhang, 1fr),
     move(dx: -overhang, letter),
     {
-      set par(hanging-indent: hanging-indent)
-      first
+      let start = if resolve-dir() == ltr { "left" } else { "right" }
+
+      pad(..((start): hanging-indent), h(-hanging-indent) + {
+        first
       
-      if not has-break and inline(last-of-first) and inline(first-of-second) {
-        linebreak(justify: justify)
-      } 
+        if not has-break and inline(last-of-first) and inline(first-of-second) {
+          linebreak(justify: justify)
+        }
+      })
     }
   ))
 
