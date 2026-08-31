@@ -44,6 +44,11 @@
     return (letter, rest)
   }
 
+  // Handle par content.
+  if body.func() == par {
+    return extract-first-letter(body.body)
+  }
+
   // Handle text content.
   if body.has("text") {
     let (text, ..fields) = body.fields()
