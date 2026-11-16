@@ -40,8 +40,9 @@
     if letter == none {
       return (none, body)
     }
-    let rest = body.clusters().slice(1).join()
-    return (letter, rest)
+
+    let rest = ((body.clusters().at(1).trim(),) + body.clusters().slice(2)).join()
+    return (letter.trim(), rest)
   }
 
   // Handle text content.
